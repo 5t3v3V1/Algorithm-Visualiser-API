@@ -19,3 +19,16 @@ def board_generator(board):
             board.nodes[position].number = 0
 
     return False
+
+def grid_generator():
+    possible_nodes = ["#", ".", "?", "~", "^"]
+    weights = [0.2, 0.3, 0.25, 0.2, 0.15]
+    grid = []
+
+    for h in range(5):
+        grid.append("")
+        for w in range(5):
+            node = random.choices(possible_nodes, weights = weights, k = 1)[0]
+            grid[h] += node
+
+    return grid
