@@ -33,7 +33,7 @@ class Board:
     def to_list(self):
         board = []
         for y in range(9):
-            row = []
+            row = ""
 
             for x in range(9):
                 row += str(self.nodes[(x, y)].number)
