@@ -32,6 +32,7 @@ def bfs(grid):
             for node_position in path:
                 identified_node = identify_node(grid, node_position)
                 identified_node.pathed()
+                steps.append(grid.to_list())
 
             bfs_grid = grid  
 
@@ -53,6 +54,7 @@ def bfs(grid):
 
         else:
             print("Unable to reach desired node")
+            return nodes_visited, bfs_grid, steps
 
 
 def dfs(grid):
@@ -86,6 +88,7 @@ def dfs(grid):
             for node_position in path:
                 identified_node = identify_node(grid, node_position)
                 identified_node.pathed()
+                steps.append(grid.to_list())
 
             dfs_grid = grid 
 
@@ -107,6 +110,7 @@ def dfs(grid):
 
         else:
             print("Unable to reach desired node")
+            return nodes_visited, dfs_grid, steps
 
 def dijkstra(grid):
     start_position, end_position = (0, 0), (4, 4)
@@ -157,6 +161,7 @@ def dijkstra(grid):
                 path.append(node.position)
                 node.pathed()
                 node = node.parent  
+                steps.append(grid.to_list())
 
             dijkstra_grid = grid
                  
@@ -183,6 +188,7 @@ def dijkstra(grid):
 
         else:
             print("Unable to reach desired node")
+            return nodes_visited, dijkstra_grid, steps
 
 def astar(grid):
     start_position, end_position = (0, 0), (4, 4)
@@ -234,6 +240,7 @@ def astar(grid):
                 path.append(node.position)
                 node.pathed()
                 node = node.parent
+                steps.append(grid.to_list())
 
             astar_grid = grid 
                 
@@ -261,3 +268,4 @@ def astar(grid):
 
         else:
             print("Unable to reach desired node")
+            return nodes_visited, astar_grid, steps

@@ -26,10 +26,33 @@ const astar_time = document.getElementById("astar_time");
 const winner = document.getElementById("winner");
 const board_time = document.getElementById("board_time");
 
+function cell_class(char) {
+    switch (char) {
+        case "#":
+            return "wall";
 
+        case ".":
+            return "super_light";
+
+        case "?":
+            return "light";
+
+        case "~":
+            return "medium";
+
+        case "^":
+            return "heavy";
+        
+        case "!":
+            return "visited";
+
+        case "*":
+            return "path";
+    };
+};
 
 function format_board(board) {
-    format = "";
+    let format = "";
 
     for (let row = 0; row < board.length; row ++) {
         for (let cell = 0;  cell < board[row].split("").length; cell ++) {
@@ -41,15 +64,28 @@ function format_board(board) {
 };
 
 function format_grid(grid) {
-    format = "";
+    let format = "";
 
     for (let row = 0; row < grid.length; row ++) {
-        for (let cell = 0; cell < grid[row].split("").length; cell ++) {
-            format += `<div>${grid[row].split("")[cell]}</div>`
+        for (let cell = 0;  cell < grid[row].split("").length; cell ++) {
+            const char = grid[row].split("")[cell]
+            format += `<div class="cell ${cell_class(char)}"></div>`
         };
     };
 
     return format
+};
+
+function animate_steps(steps, type, delay = 150) {
+    let i = 0;
+    const interval = setInterval (() => {
+        if (i >= steps.length) {
+            clearInterval(interval);
+            return;
+        };
+        type.innerHTML = format_grid(steps[i]);
+        i ++;
+    }, delay);
 };
 
 generate_solve_board_button.addEventListener("click", async () => {
@@ -70,25 +106,21 @@ generate_solve_grid_button.addEventListener("click", async () => {
 
     console.log(data);
     generated_grid.innerHTML = format_grid(data.generated_grid);
-    bfs_type.innerHTML = "<h3>BFS</h3>";
     bfs_nodes.innerText = `Nodes Visited: ${data.bfs.bfs_nodes}`;
-    bfs_grid.innerHTML = `Solved Grid: ${format_grid(data.bfs.solved_bfs_grid)}`;
-    bfs_steps.innerText = `Steps: ${data.bfs.bfs_steps.length}`;
+    bfs_grid.innerHTML = format_grid(data.bfs.solved_bfs_grid);
+    animate_steps(data.bfs.bfs_steps, bfs_steps);
     bfs_time.innerText = `Solve Time: ${data.bfs.time_ms.toFixed(2)}ms`;
-    dfs_type.innerHTML = "<h3>DFS</h3>";
     dfs_nodes.innerText = `Nodes Visited: ${data.dfs.dfs_nodes}`;
-    dfs_grid.innerHTML = `Solved Grid: ${format_grid(data.dfs.solved_dfs_grid)}`;
-    dfs_steps.innerText = `Steps: ${data.dfs.dfs_steps.length}`;
+    dfs_grid.innerHTML = format_grid(data.dfs.solved_dfs_grid);
+    animate_steps(data.dfs.dfs_steps, dfs_steps);
     dfs_time.innerText = `Solve Time: ${data.dfs.time_ms.toFixed(2)}ms`;
-    dijkstra_type.innerHTML = "<h3>Dijkstra</h3>";
     dijkstra_nodes.innerText = `Nodes Visited: ${data.dijkstra.dijkstra_nodes}`;
-    dijkstra_grid.innerHTML = `Solved Grid: ${format_grid(data.dijkstra.solved_dijkstra_grid)}`;
-    dijkstra_steps.innerText = `Steps: ${data.dijkstra.dijkstra_steps.length}`;
+    dijkstra_grid.innerHTML = format_grid(data.dijkstra.solved_dijkstra_grid);
+    animate_steps(data.dijkstra.dijkstra_steps, dijkstra_steps);
     dijkstra_time.innerText = `Solve Time: ${data.dijkstra.time_ms.toFixed(2)}ms`;
-    astar_type.innerHTML = "<h3>A*</h3>";
     astar_nodes.innerText = `Nodes Visited: ${data.astar.astar_nodes}`;
-    astar_grid.innerText = `Solved Grid: ${format_grid(data.astar.solved_astar_grid)}`;
-    astar_steps.innerText = `Steps: ${data.astar.astar_steps.length}`;
+    astar_grid.innerHTML = format_grid(data.astar.solved_astar_grid);
+    animate_steps(data.astar.astar_steps, astar_steps);
     astar_time.innerText = `Solve Time: ${data.astar.time_ms.toFixed(2)}ms`;
 
     const results = [

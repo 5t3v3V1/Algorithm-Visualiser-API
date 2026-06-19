@@ -21,32 +21,56 @@
     <p></p>
     <div id="board_time"></div>
     <p></p>
+    <p>Node Classification</p>
+    <p class="cell wall" style="width: 120px; color: aliceblue; text-align: center;">Wall</p>
+    <p class="cell super_light" style="width: 120px;">Node Cost: 1</p>
+    <p class="cell light" style="width: 120px;">Node Cost: 5</p>
+    <p class="cell medium" style="width: 120px;">Node Cost: 10</p>
+    <p class="cell heavy" style="width: 120px;">Node Cost: 15</p>
+    <p class="cell visited" style="width: 120px; text-align: center;">Visited</p>
+    <p class="cell path" style="width: 120px; text-align: center;">Path</p>
+    <p></p>
     <p>Generated Grid:</p>
     <div class="grid" id="generated_grid"></div>
     <p></p>
-    <div id="bfs_type"></div>
-    <div id="bfs_nodes"></div>
-    <div id="bfs_steps"></div>
-    <div class="grid" id="bfs_grid"></div>
-    <div id="bfs_time"></div>
-    <p></p>
-    <div id="dfs_type"></div>
-    <div id="dfs_nodes"></div>
-    <div id="dfs_steps"></div>
-    <div class="grid" id="dfs_grid"></div>
-    <div id="dfs_time"></div>
-    <p></p>
-    <div id="dijkstra_type"></div>
-    <div id="dijkstra_nodes"></div>
-    <div id="dijkstra_steps"></div>
-    <div class="grid" id="dijkstra_grid"></div>
-    <div id="dijkstra_time"></div>
-    <p></p>
-    <div id="astar_type"></div>
-    <div id="astar_nodes"></div>
-    <div id="astar_steps"></div>
-    <div class="grid" id="astar_grid"></div>
-    <div id="astar_time"></div>
+    <div class="algorithms">
+        <div>
+            <h3>BFS</h3>
+            <div id="bfs_nodes"></div>
+            <p>Steps:</p>
+            <div class="grid" id="bfs_steps"></div>
+            <p>Solved Grid:</p>
+            <div class="grid" id="bfs_grid"></div>
+            <div id="bfs_time"></div>
+        </div>
+        <div>
+            <h3>DFS</h3>
+            <div id="dfs_nodes"></div>
+            <p>Steps:</p>
+            <div class="grid" id="dfs_steps"></div>
+            <p>Solved Grid:</p>
+            <div class="grid" id="dfs_grid"></div>
+            <div id="dfs_time"></div>
+        </div>
+        <div>
+            <h3>Dijkstra</h3>
+            <div id="dijkstra_nodes"></div>
+            <p>Steps:</p>
+            <div class="grid" id="dijkstra_steps"></div>
+            <p>Solved Grid:</p>
+            <div class="grid" id="dijkstra_grid"></div>
+            <div id="dijkstra_time"></div>
+        </div>
+        <div>
+            <h3>A*</h3>
+            <div id="astar_nodes"></div>
+            <p>Steps:</p>
+            <div class="grid" id="astar_steps"></div>
+            <p>Solved Grid:</p>
+            <div class="grid" id="astar_grid"></div>
+            <div id="astar_time"></div>
+        </div>
+    </div>
     <p></p>
     <div id="winner"></div>
 
