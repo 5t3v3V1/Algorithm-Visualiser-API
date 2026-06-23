@@ -104,7 +104,6 @@ function App() {
         <p>Creator: 5t3v3V1</p>
         <h3>Options</h3>
         <button onClick={generate_solved_board}>Generate & Solve Board</button>
-        <button onClick={generate_solved_grid}>Generate & Solve Grid</button>
         <div className='boards'>
           <div>
             <h4>Generated Board:</h4>
@@ -120,6 +119,7 @@ function App() {
           </div>
         </div>
         <div>Board Time: {boardTime}ms</div>
+        <button onClick={generate_solved_grid}>Generate & Solve Grid</button>
         <div className='generated'>
           <div>
             <h3>Generated Grid:</h3>
