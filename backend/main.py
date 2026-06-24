@@ -101,8 +101,8 @@ def generate_solve_board():
     )
 
     db.add(board_result)
-    db.close()
     db.commit()
+    db.close()
 
     if not solved:
         return {
@@ -183,8 +183,8 @@ def generate_solve_grid():
 
     db.add(astar_result)
 
-    db.close()
     db.commit()
+    db.close()
 
     return {
         "generated_grid": generated_grid.to_list(),
@@ -254,8 +254,8 @@ def solve_grid(request: GridRequest):
 
     db.add(astar_result)
 
-    db.close()
     db.commit()
+    db.close()
 
     return {
         "input_grid": input_grid.to_list(),
@@ -285,8 +285,8 @@ def solve_board(request: SudokuRequest):
     )
 
     db.add(board_result)
-    db.close()
     db.commit()
+    db.close()
 
     if not solved:
         return {

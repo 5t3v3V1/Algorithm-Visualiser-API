@@ -1,8 +1,7 @@
 from sqlalchemy.orm import declarative_base
 from sqlalchemy import Column, Integer, String, DateTime, Float
 from datetime import datetime, UTC
-
-Base = declarative_base()
+from database import Base
 
 class Results(Base):
     __tablename__ = "results"
@@ -14,7 +13,7 @@ class Results(Base):
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
 
 class BoardResults(Base):
-    __tablename__ = "board results"
+    __tablename__ = "board_results"
 
     id = Column(Integer, primary_key = True)
     moves = Column(Integer)

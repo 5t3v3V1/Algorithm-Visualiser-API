@@ -17,7 +17,7 @@ def solver(grid, steps = None, moves = None):
                 grid.nodes[position].number = value
                 steps.append(grid.to_list())
                 moves += 1
-                solved, steps = solver(grid, steps, moves)
+                solved, steps, moves = solver(grid, steps, moves)
                 if solved:
                     return True, steps, moves
                 
