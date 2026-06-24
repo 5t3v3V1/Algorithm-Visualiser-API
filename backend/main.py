@@ -1,13 +1,13 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from backend.solver import solver
+from .solver import solver
 import random
 import copy
 import time
-from backend.validator import is_valid
-from backend.classes import Board, SudokuRequest, Grid, Grid_Node, GridRequest
-from backend.generator import board_generator, grid_generator
-from backend.pathfinding_algorithm import bfs, dfs, dijkstra, astar
+from .validator import is_valid
+from .classes import Board, SudokuRequest, Grid, Grid_Node, GridRequest
+from .generator import board_generator, grid_generator
+from .pathfinding_algorithm import bfs, dfs, dijkstra, astar
 from fastapi.middleware.cors import CORSMiddleware
 from models import Results, BoardResults
 from database import SessionLocal
