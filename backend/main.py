@@ -203,7 +203,7 @@ def generate_solve_grid():
         result_id = group_result.id,
         algorithm = "A*",
         nodes_visited = astar_nodes,
-        solve_time = astar
+        solve_time = astar_solve_time
     )
 
     db.add(astar_result)
@@ -259,7 +259,7 @@ def solve_grid(request: GridRequest):
 
     best_time = min(results, key=results.get)
 
-    group_result = ResultAlgorithms(
+    group_result = Results(
         best_algorithm = best_time
     )
 
