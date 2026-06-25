@@ -103,7 +103,7 @@ async def generate_solve_board(websocket: WebSocket):
 
     start = time.perf_counter()
     
-    solved, board_moves = livesolver(board, websocket)
+    solved, board_moves = await livesolver(board, websocket)
 
     end = time.perf_counter()
 
@@ -118,8 +118,7 @@ async def generate_solve_board(websocket: WebSocket):
 
     if not solved:
         await websocket.send_json({
-            "type": "unfinished",
-            "solved": solved,
+            "type": "unfinished_board",
             "generated_board": generated_board.to_list(),
             "solved_board": board.to_list(),
             "moves": board_moves,
@@ -129,8 +128,7 @@ async def generate_solve_board(websocket: WebSocket):
         await websocket.close()
 
     await websocket.send_json({
-        "type": "finished",
-        "solved": solved,
+        "type": "finished_board",
         "generated_board": generated_board.to_list(),
         "solved_board": board.to_list(),
         "moves": board_moves,
@@ -141,7 +139,7 @@ async def generate_solve_board(websocket: WebSocket):
 
 @app.websocket("/generate_solve_grid")
 async def generate_solve_grid(websocket: WebSocket):
-    websocket.accept()
+    await websocket.accept()
     db = SessionLocal()
     grid = grid_generator()
     generated_grid = grid.copy()
@@ -153,16 +151,17 @@ async def generate_solve_grid(websocket: WebSocket):
     dijkstra_grid = Grid(grid)
     astar_grid = Grid(grid)
     
-    with ThreadPoolExecutor as executor:
-        bfs_future = executor.submit(livebfs, (bfs_grid, websocket))
-        dfs_future = executor.submit(livedfs, (dfs_grid, websocket))
-        dijkstra_future = executor.submit(livedijkstra, (dijkstra_grid, websocket))
-        astar_future = executor.submit(liveastar, (astar_grid, websocket))
+    results = await asyncio.gather(
+    livebfs(bfs_grid, websocket),
+    livedfs(dfs_grid, websocket),
+    livedijkstra(dijkstra_grid, websocket),
+    liveastar(astar_grid, websocket),
+    )
 
-        bfs_nodes, solved_bfs_grid, bfs_solve_time = bfs_future.result()
-        dfs_nodes, solved_dfs_grid, dfs_solve_time = dfs_future.result()
-        dijkstra_nodes, solved_dijkstra_grid, dijkstra_solve_time = dijkstra_future.result()
-        astar_nodes, solved_astar_grid, astar_solve_time = astar_future.result()
+    bfs_nodes, solved_bfs_grid, bfs_solve_time = results[0]
+    dfs_nodes, solved_dfs_grid, dfs_solve_time = results[1]
+    dijkstra_nodes, solved_dijkstra_grid, dijkstra_solve_time = results[2]
+    astar_nodes, solved_astar_grid, astar_solve_time = results[3]
 
     results = {
         "BFS": bfs_solve_time,
@@ -222,17 +221,17 @@ async def generate_solve_grid(websocket: WebSocket):
     await websocket.send_json({
         "type": "finished",
         "generated_grid": generated_grid.to_list(),
-        "bfs": {"bfs_nodes": bfs_nodes, "solved_bfs_grid": solved_bfs_grid.to_list(), "time_ms": bfs_solve_time},
-        "dfs": {"dfs_nodes": dfs_nodes, "solved_dfs_grid": solved_dfs_grid.to_list(), "time_ms": dfs_solve_time},
-        "dijkstra": {"dijkstra_nodes": dijkstra_nodes, "solved_dijkstra_grid": solved_dijkstra_grid.to_list(), "time_ms": dijkstra_solve_time},
-        "astar": {"astar_nodes": astar_nodes, "solved_astar_grid": solved_astar_grid.to_list(), "time_ms": astar_solve_time},
+        "bfs": {"algorithm": "BFS", "bfs_nodes": bfs_nodes, "solved_bfs_grid": solved_bfs_grid.to_list(), "time_ms": bfs_solve_time},
+        "dfs": {"algorithm": "DFS", "dfs_nodes": dfs_nodes, "solved_dfs_grid": solved_dfs_grid.to_list(), "time_ms": dfs_solve_time},
+        "dijkstra": {"algorithm": "Dijkstra", "dijkstra_nodes": dijkstra_nodes, "solved_dijkstra_grid": solved_dijkstra_grid.to_list(), "time_ms": dijkstra_solve_time},
+        "astar": {"algorithm": "A*", "astar_nodes": astar_nodes, "solved_astar_grid": solved_astar_grid.to_list(), "time_ms": astar_solve_time},
     })
     
     await websocket.close()
 
 @app.websocket("/solve_board")
 async def solve_board(request: SudokuRequest, websocket: WebSocket):
-    websocket.accept()
+    await websocket.accept()
     db = SessionLocal()
     board = Board(request.board)
     board.append_positions()
@@ -256,8 +255,7 @@ async def solve_board(request: SudokuRequest, websocket: WebSocket):
 
     if not solved:
         await websocket.send_json({
-            "type": "unfinished",
-            "solved": solved,
+            "type": "unfinished_board",
             "generated_board": input_board.to_list(),
             "solved_board": board.to_list(),
             "moves": board_moves,
@@ -267,8 +265,7 @@ async def solve_board(request: SudokuRequest, websocket: WebSocket):
         await websocket.close()
 
     await websocket.send_json({
-        "type": "finished",
-        "solved": solved,
+        "type": "finished_board",
         "generated_board": input_board.to_list(),
         "solved_board": board.to_list(),
         "moves": board_moves,
@@ -279,7 +276,7 @@ async def solve_board(request: SudokuRequest, websocket: WebSocket):
 
 @app.websocket("/solve_grid")
 async def solve_grid(request: SudokuRequest, websocket: WebSocket):
-    websocket.accept()
+    await websocket.accept()
     db = SessionLocal()
     input_grid = request.grid.copy()
     input_grid = Grid(input_grid)
@@ -290,16 +287,18 @@ async def solve_grid(request: SudokuRequest, websocket: WebSocket):
     dijkstra_grid = Grid(request.grid)
     astar_grid = Grid(request.grid)
 
-    with ThreadPoolExecutor as executor:
-        bfs_future = executor.submit(livebfs, bfs_grid)
-        dfs_future = executor.submit(livedfs, dfs_grid)
-        dijkstra_future = executor.submit(livedijkstra, dijkstra_grid)
-        astar_future = executor.submit(liveastar, astar_grid)
+    results = await asyncio.gather(
+    livebfs(bfs_grid, websocket),
+    livedfs(dfs_grid, websocket),
+    livedijkstra(dijkstra_grid, websocket),
+    liveastar(astar_grid, websocket),
+    )
 
-        bfs_nodes, solved_bfs_grid, bfs_solve_time = bfs_future.result()
-        dfs_nodes, solved_dfs_grid, dfs_solve_time = dfs_future.result()
-        dijkstra_nodes, solved_dijkstra_grid, dijkstra_solve_time = dijkstra_future.result()
-        astar_nodes, solved_astar_grid, astar_solve_time = astar_future.result()
+    bfs_nodes, solved_bfs_grid, bfs_solve_time = results[0]
+    dfs_nodes, solved_dfs_grid, dfs_solve_time = results[1]
+    dijkstra_nodes, solved_dijkstra_grid, dijkstra_solve_time = results[2]
+    astar_nodes, solved_astar_grid, astar_solve_time = results[3]
+
 
     results = {
         "BFS": bfs_solve_time,
@@ -359,10 +358,10 @@ async def solve_grid(request: SudokuRequest, websocket: WebSocket):
     await websocket.send_json({
         "type": "finished",
         "generated_grid": input_grid.to_list(),
-        "bfs": {"bfs_nodes": bfs_nodes, "solved_bfs_grid": solved_bfs_grid.to_list(), "time_ms": bfs_solve_time},
-        "dfs": {"dfs_nodes": dfs_nodes, "solved_dfs_grid": solved_dfs_grid.to_list(), "time_ms": dfs_solve_time},
-        "dijkstra": {"dijkstra_nodes": dijkstra_nodes, "solved_dijkstra_grid": solved_dijkstra_grid.to_list(), "time_ms": dijkstra_solve_time},
-        "astar": {"astar_nodes": astar_nodes, "solved_astar_grid": solved_astar_grid.to_list(), "time_ms": astar_solve_time},
+        "bfs": {"algorithm": "BFS", "bfs_nodes": bfs_nodes, "solved_bfs_grid": solved_bfs_grid.to_list(), "time_ms": bfs_solve_time},
+        "dfs": {"algorithm": "DFS", "dfs_nodes": dfs_nodes, "solved_dfs_grid": solved_dfs_grid.to_list(), "time_ms": dfs_solve_time},
+        "dijkstra": {"algorithm": "Dijkstra", "dijkstra_nodes": dijkstra_nodes, "solved_dijkstra_grid": solved_dijkstra_grid.to_list(), "time_ms": dijkstra_solve_time},
+        "astar": {"algorithm": "A*", "astar_nodes": astar_nodes, "solved_astar_grid": solved_astar_grid.to_list(), "time_ms": astar_solve_time},
     })
     
     await websocket.close()
@@ -435,7 +434,7 @@ def generate_solve_grid_prews():
     dijkstra_grid = Grid(grid)
     astar_grid = Grid(grid)
     
-    with ThreadPoolExecutor as executor:
+    with ThreadPoolExecutor() as executor:
         bfs_future = executor.submit(bfs, bfs_grid)
         dfs_future = executor.submit(dfs, dfs_grid)
         dijkstra_future = executor.submit(dijkstra, dijkstra_grid)

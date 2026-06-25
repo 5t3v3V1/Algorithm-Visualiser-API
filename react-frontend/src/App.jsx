@@ -45,7 +45,7 @@ function App() {
     useEffect(() => {
       counter();
       generate_solved_board();
-      generate_solved_grid;
+      generate_solved_grid();
     }, []);
 
     async function counter() {
@@ -65,20 +65,99 @@ function App() {
     async function generate_solved_board() {
       try {
         const socket = new WebSocket(`wss://algorithm-visualiser-api.onrender.com/generate_solve_board`);
-        if (!socket.ok) throw new Error("Failed");
-        const data = await response.json();
+        socket.onopen = () => {
+          console.log("Connected");
+        }
 
-        console.log(data);
-        setGeneratedBoard(data.generated_board);
-        animate_steps(data.board_steps, setBoardStep)
-        setSolvedBoard(data.solved_board);
-        setBoardMove(data.moves);
-        setBoardTime(data.time_ms.toFixed(2));
+        socket.onmessage = (event) => {
+          const data = JSON.parse(event.data);
+          console.log(data);
+          
+          if (data.type === "board_step") {
+            setBoardStep(data.board)
+          }
+          if (data.type === "finished_board") {
+            setGeneratedBoard(data.generated_board);
+            setSolvedBoard(data.solved_board);
+            setBoardMove(data.moves);
+            setBoardTime(data.time_ms.toFixed(2));
+          }
+          if (data.type === "unfinished_board") {
+            setGeneratedBoard(data.generated_board);
+            setSolvedBoard(data.solved_board);
+            setBoardMove(data.moves);
+            setBoardTime(data.time_ms.toFixed(2));
+          }
+        }
       } catch(err) {
         console.log(err);
       }
     };
-  
+    
+    async function generate_solved_grid() {
+      try {
+        const socket = new WebSocket(`wss://algorithm-visualiser-api.onrender.com/generate_solve_grid`);
+        socket.onopen = () => {
+          console.log("Connected");
+        }
+
+        socket.onmessage = (event) => {
+          const data = JSON.parse(event.data);
+          console.log(data);
+
+          setGeneratedGrid(data.generated_grid);
+
+          if (data.algorithm === "BFS") {
+            setBfsGridStep(data.grid);
+          };
+          if (data.algorithm === "DFS") {
+            setDfsGridStep(data.grid)
+          };
+          if (data.algorithm === "Dijkstra") {
+            setDijkstraGridStep(data.grid);
+          };
+          if (data.algorithm === "A*") {
+            setAstarGridStep(data.grid);
+          };
+
+          if (data.bfs.algorithm === "BFS") {
+            setBfsNodes(data.bfs.bfs_nodes);
+            setSolvedBfsGrid(data.bfs.solved_bfs_grid);
+            setBfsTime(data.bfs.time_ms.toFixed(2));
+          };
+          if (data.dfs.algorithm === "DFS") {
+            setDfsNodes(data.dfs.dfs_nodes);
+            setSolvedDfsGrid(data.dfs.solved_dfs_grid);
+            setDfsTime(data.dfs.time_ms.toFixed(2));
+          };
+          if (data.dijkstra.algorithm === "Dijkstra") {
+            setDijkstraNodes(data.dijkstra.dijkstra_nodes);
+            setSolvedDijkstraGrid(data.dijkstra.solved_dijkstra_grid);
+            setDijkstraTime(data.dijkstra.time_ms.toFixed(2));
+          };
+          if (data.astar.algorithm === "A*") {
+            setAstarNodes(data.astar.astar_nodes);
+            setSolvedAstarGrid(data.astar.solved_astar_grid);
+            animate_steps(data.astar.astar_steps, setAstarGridStep);
+            setAstarTime(data.astar.time_ms.toFixed(2));
+          };
+
+          const results = [
+            {name: "BFS", time: data.bfs.time_ms},
+            {name: "DFS", time: data.dfs.time_ms},
+            {name: "Dijkstra", time: data.dijkstra.time_ms},
+            {name: "A*", time: data.astar.time_ms}
+          ];
+
+          results.sort((a,b) => a.time - b.time);
+
+          setWinner(results[0].name)
+        }
+      } catch(err) {
+        console.log(err);
+      };
+    };
+
     /*async function generate_solved_board() {
       try {
         const response = await fetch(`${API_URL}/generate_solve_board`);
