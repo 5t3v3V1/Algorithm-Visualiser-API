@@ -2,7 +2,7 @@ import Grid from './Grid'
 import Board from './Board'
 import { useState, useEffect, useRef } from 'react';
 
-function animate_steps(steps, setType, delay = 150) {
+function animate_steps(steps, setType, delay = 150, ref) {
     let i = 0;
     const interval = setInterval (() => {
         if (i >= steps.length) {
@@ -64,14 +64,18 @@ function App() {
 
     const socketRef1 = useRef(null);
 
-    async function generate_solved_board() {
+    async function generate_solved_board(difficulty) {
       try {
         if (socketRef1.current) socketRef1.current.close();
         const socket = new WebSocket(`wss://algorithm-visualiser-api.onrender.com/generate_solve_board`);
         socketRef1.current = socket
         socket.onopen = () => {
-          console.log("Connected");
-        }
+          socket.send(
+            JSON.stringify({
+              difficulty: difficulty
+            })
+          );
+        };
 
         socket.onmessage = (event) => {
           const data = JSON.parse(event.data);
@@ -152,9 +156,16 @@ function App() {
       };
     };
 
-    /*async function generate_solved_board() {
+    async function generate_solved_board_prews(difficulty) {
       try {
-        const response = await fetch(`${API_URL}/generate_solve_board`);
+        const data = { difficulty }
+        const response = await fetch(`${API_URL}/generate_solve_board_prews`, {
+          method = 'POST',
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body = JSON.stringify(data)
+        });
         if (!response.ok) throw new Error("Failed");
         const data = await response.json();
 
@@ -167,14 +178,11 @@ function App() {
       } catch(err) {
         console.log(err);
       }
-    };*/
+    };
 
-
-
-
-    /*async function generate_solved_grid() {
+    async function generate_solved_grid_prews() {
       try {
-        const response = await fetch(`${API_URL}/generate_solve_grid`);
+        const response = await fetch(`${API_URL}/generate_solve_grid_prews`);
         if (!response.ok) throw new Error("Failed")
         const data = await response.json();
 
@@ -210,7 +218,7 @@ function App() {
       } catch(err) {
         console.log(err);
       };
-    };*/
+    };
 
     return (
       <>
@@ -239,7 +247,11 @@ function App() {
           <div>Board Time: {boardTime}ms</div>
           <div>Moves Made: {boardMove}</div>
         </div>
-        <button onClick={generate_solved_grid}>Generate & Solve Grid</button>
+        <div className='diff'>
+          <button onClick={() => generate_solved_grid(20)}>Generate & Solve Grid (Hard)</button>
+          <button onClick={() => generate_solved_grid(30)}>Generate & Solve Grid (Medium)</button>
+          <button onClick={() => generate_solved_grid(40)}>Generate & Solve Grid (Easy)</button>
+        </div>
         <div className='generated'>
           <div>
             <h3>Generated Grid:</h3>

@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
-class SudokuRequest(BaseModel):
-    board: list[list[int]]
+class DifficultyRequest(BaseModel):
+    difficulty: int
 
 class GridRequest(BaseModel):
     grid: list[str]

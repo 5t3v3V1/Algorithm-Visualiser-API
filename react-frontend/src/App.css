@@ -53,6 +53,12 @@
     justify-content: center;
 }
 
+.diff {
+    display: flex;
+    justify-content: center;
+    
+}
+
 button {
     background-color: #116466;        /* Facebook blue */
     color: #fff;
