@@ -136,6 +136,7 @@ async def generate_solve_board(websocket: WebSocket):
     })
     
     await websocket.close()
+    return
 
 @app.websocket("/generate_solve_grid")
 async def generate_solve_grid(websocket: WebSocket):
@@ -230,17 +231,19 @@ async def generate_solve_grid(websocket: WebSocket):
     await websocket.close()
 
 @app.websocket("/solve_board")
-async def solve_board(request: SudokuRequest, websocket: WebSocket):
+async def solve_board(websocket: WebSocket):
     await websocket.accept()
     db = SessionLocal()
-    board = Board(request.board)
+    data = await websocket.receive_json()
+    board = data["board"]
+    board = Board(board)
     board.append_positions()
     
     input_board = copy.deepcopy(board)
 
     start = time.perf_counter()
     
-    solved, board_moves = livesolver(board, websocket)
+    solved, board_moves = await livesolver(board, websocket)
 
     end = time.perf_counter()
 
@@ -263,6 +266,7 @@ async def solve_board(request: SudokuRequest, websocket: WebSocket):
         })
     
         await websocket.close()
+        return
 
     await websocket.send_json({
         "type": "finished_board",
@@ -278,7 +282,9 @@ async def solve_board(request: SudokuRequest, websocket: WebSocket):
 async def solve_grid(request: SudokuRequest, websocket: WebSocket):
     await websocket.accept()
     db = SessionLocal()
-    input_grid = request.grid.copy()
+    data = await websocket.receive_json()
+    grid = data["grid"]
+    input_grid = grid.copy()
     input_grid = Grid(input_grid)
     input_grid.append_nodes()
 

@@ -1,6 +1,6 @@
 import Grid from './Grid'
 import Board from './Board'
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 function animate_steps(steps, setType, delay = 150) {
     let i = 0;
@@ -62,9 +62,13 @@ function App() {
       }
     };
 
+    const socketRef1 = useRef(null);
+
     async function generate_solved_board() {
       try {
+        if (socketRef1.current) socketRef1.current.close();
         const socket = new WebSocket(`wss://algorithm-visualiser-api.onrender.com/generate_solve_board`);
+        socketRef1.current = socket
         socket.onopen = () => {
           console.log("Connected");
         }
@@ -93,10 +97,14 @@ function App() {
         console.log(err);
       }
     };
+
+    const socketRef2 = useRef(null);
     
     async function generate_solved_grid() {
       try {
+        if (socketRef2.current) socketRef2.current.close();
         const socket = new WebSocket(`wss://algorithm-visualiser-api.onrender.com/generate_solve_grid`);
+        socketRef2.current = socket
         socket.onopen = () => {
           console.log("Connected");
         }
@@ -105,53 +113,39 @@ function App() {
           const data = JSON.parse(event.data);
           console.log(data);
 
-          setGeneratedGrid(data.generated_grid);
-
-          if (data.algorithm === "BFS") {
-            setBfsGridStep(data.grid);
-          };
-          if (data.algorithm === "DFS") {
-            setDfsGridStep(data.grid)
-          };
-          if (data.algorithm === "Dijkstra") {
-            setDijkstraGridStep(data.grid);
-          };
-          if (data.algorithm === "A*") {
-            setAstarGridStep(data.grid);
+          if (data.type === "step"){
+            if (data.algorithm === "BFS") setBfsGridStep(data.grid);
+            if (data.algorithm === "DFS") setDfsGridStep(data.grid);
+            if (data.algorithm === "Dijkstra") setDijkstraGridStep(data.grid);
+            if (data.algorithm === "A*") setAstarGridStep(data.grid);
           };
 
-          if (data.bfs.algorithm === "BFS") {
+          if (data.type === "finished") {
+            setGeneratedGrid(data.generated_grid);
             setBfsNodes(data.bfs.bfs_nodes);
             setSolvedBfsGrid(data.bfs.solved_bfs_grid);
             setBfsTime(data.bfs.time_ms.toFixed(2));
-          };
-          if (data.dfs.algorithm === "DFS") {
             setDfsNodes(data.dfs.dfs_nodes);
             setSolvedDfsGrid(data.dfs.solved_dfs_grid);
             setDfsTime(data.dfs.time_ms.toFixed(2));
-          };
-          if (data.dijkstra.algorithm === "Dijkstra") {
             setDijkstraNodes(data.dijkstra.dijkstra_nodes);
             setSolvedDijkstraGrid(data.dijkstra.solved_dijkstra_grid);
             setDijkstraTime(data.dijkstra.time_ms.toFixed(2));
-          };
-          if (data.astar.algorithm === "A*") {
             setAstarNodes(data.astar.astar_nodes);
             setSolvedAstarGrid(data.astar.solved_astar_grid);
-            animate_steps(data.astar.astar_steps, setAstarGridStep);
             setAstarTime(data.astar.time_ms.toFixed(2));
-          };
 
-          const results = [
-            {name: "BFS", time: data.bfs.time_ms},
-            {name: "DFS", time: data.dfs.time_ms},
-            {name: "Dijkstra", time: data.dijkstra.time_ms},
-            {name: "A*", time: data.astar.time_ms}
-          ];
+            const results = [
+              {name: "BFS", time: data.bfs.time_ms},
+              {name: "DFS", time: data.dfs.time_ms},
+              {name: "Dijkstra", time: data.dijkstra.time_ms},
+              {name: "A*", time: data.astar.time_ms}
+            ];
 
-          results.sort((a,b) => a.time - b.time);
+            results.sort((a,b) => a.time - b.time);
 
-          setWinner(results[0].name)
+            setWinner(results[0].name)
+          }
         }
       } catch(err) {
         console.log(err);
