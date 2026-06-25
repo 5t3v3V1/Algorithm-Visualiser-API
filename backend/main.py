@@ -27,62 +27,23 @@ app.add_middleware(
     allow_headers = ["*"],
 )
 
-def grid_db_helper(db, bfs, dfs, dijkstra, astar):
-    results = {
-        "BFS": bfs_solve_time,
-        "DFS": dfs_solve_time,
-        "Dijkstra": dijkstra_solve_time,
-        "A*": astar_solve_time
-    }
+def grid_db_helper(db, results_dict):
+    best_time = min(results_dict, key=lambda k: results_dict[k][1])
 
-    best_time = min(results, key=results.get)
-
-    group_result = Results(
-        best_algorithm = best_time
-    )
-
+    group_result = Results(best_algorithm = best_time)
     db.add(group_result)
     db.flush()
 
-    bfs_result = ResultAlgorithms(
-        result_id = group_result.id,
-        algorithm = "BFS",
-        nodes_visited = bfs_nodes,
-        solve_time = bfs_solve_time
-    )
-
-    db.add(bfs_result)
-
-    dfs_result = ResultAlgorithms(
-        result_id = group_result.id,
-        algorithm = "DFS",
-        nodes_visited = dfs_nodes,
-        solve_time = dfs_solve_time
-    )
-
-    db.add(dfs_result)
-
-    dijkstra_result = ResultAlgorithms(
-        result_id = group_result.id,
-        algorithm = "Dijkstra",
-        nodes_visited = dijkstra_nodes,
-        solve_time = dijkstra_solve_time
-    )
-
-    db.add(dijkstra_result)
-
-    astar_result = ResultAlgorithms(
-        result_id = group_result.id,
-        algorithm = "A*",
-        nodes_visited = astar_nodes,
-        solve_time = astar_solve_time
-    )
-
-    db.add(astar_result)
+    for algorithm, (nodes, time_ms) in results_dict.items():
+        db.add(ResultAlgorithms(
+            result_id = group_result.id,
+            algorithm = algorithm,
+            nodes_visited = nodes,
+            solve_time = time_ms
+        ))
 
     db.commit()
     db.close()
-
 
 @app.get("/")
 def message():
@@ -223,7 +184,12 @@ async def generate_solve_grid(websocket: WebSocket):
     dijkstra_nodes, solved_dijkstra_grid, dijkstra_solve_time = results[2]
     astar_nodes, solved_astar_grid, astar_solve_time = results[3]
 
-    grid_db_helper(db, bfs = (bfs_nodes, bfs_solve_time), dfs = (dfs_nodes, dfs_solve_time), dijkstra = (dijkstra_nodes, dijkstra_solve_time), astar = (astar_nodes, astar_solve_time))
+    grid_db_helper(db, {
+        "BFS": (bfs_nodes, bfs_solve_time),
+        "DFS": (dfs_nodes, dfs_solve_time),
+        "Dijkstra": (dijkstra_nodes, dijkstra_solve_time),
+        "A*": (astar_nodes, astar_solve_time)
+    })
 
     await websocket.send_json({
         "type": "finished",
@@ -316,7 +282,12 @@ def generate_solve_grid_prews():
         dijkstra_nodes, solved_dijkstra_grid, dijkstra_steps, dijkstra_solve_time = dijkstra_future.result()
         astar_nodes, solved_astar_grid, astar_steps, astar_solve_time = astar_future.result()
 
-    grid_db_helper(db, bfs = (bfs_nodes, bfs_solve_time), dfs = (dfs_nodes, dfs_solve_time), dijkstra = (dijkstra_nodes, dijkstra_solve_time), astar = (astar_nodes, astar_solve_time))
+    grid_db_helper(db, {
+        "BFS": (bfs_nodes, bfs_solve_time),
+        "DFS": (dfs_nodes, dfs_solve_time),
+        "Dijkstra": (dijkstra_nodes, dijkstra_solve_time),
+        "A*": (astar_nodes, astar_solve_time)
+    })
 
     return {
         "generated_grid": generated_grid.to_list(),
