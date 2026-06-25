@@ -36,13 +36,9 @@ def message():
 async def counter(websocket: WebSocket):
     await websocket.accept()
 
-    while True:
-
-        for number in range(10):
-            await websocket.send_json(number)
-            await asyncio.sleep(1)
-
-        break
+    for number in range(10):
+        await websocket.send_json(number)
+        await asyncio.sleep(1)
 
 @app.get("/health")
 def health():

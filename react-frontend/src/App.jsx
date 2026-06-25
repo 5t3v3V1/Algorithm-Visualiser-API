@@ -116,7 +116,7 @@ function App() {
     return (
       <>
         <h1>Algorithm Visualiser</h1>
-        <p>{count}</p>
+        <div>{count}</div>
         <h2 style={{textAlign: 'center'}}>Description</h2>
         <p>This is algorithm visualiser which is able to solve and generate sudoku boards and 5x5 grids using BFS, DFS, Dijkstra and A* algorithms.</p>
         <p>Creator: 5t3v3V1</p>
