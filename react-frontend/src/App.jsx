@@ -40,6 +40,20 @@ function App() {
     const [winner, setWinner] = useState("")
 
     const API_URL = "https://algorithm-visualiser-api.onrender.com";
+    
+    async function counter() {
+      try {
+        const socket = await WebSocket(`${API_URL}/generate_solve_board`);
+        socket.onopen = () => {
+          console.log("Connected");
+        }
+        socket.onmessage = (event) => {
+          console.log(event);
+        }
+      } catch(err) {
+      console.log(err);
+      }
+    };
   
     async function generate_solved_board() {
       try {
