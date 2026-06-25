@@ -1,6 +1,6 @@
 import Grid from './Grid'
 import Board from './Board'
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 function animate_steps(steps, setType, delay = 150) {
     let i = 0;
@@ -15,7 +15,7 @@ function animate_steps(steps, setType, delay = 150) {
 };
 
 function App() {
-    const [count, setCount] = useState[0]
+    const [count, setCount] = useState(0);
     const [generatedBoard, setGeneratedBoard] = useState([]);
     const [boardStep, setBoardStep] = useState([])
     const [solvedBoard, setSolvedBoard] = useState([]);
@@ -42,9 +42,13 @@ function App() {
 
     const API_URL = "https://algorithm-visualiser-api.onrender.com";
     
+    useEffect(() => {
+      counter();
+    }, []);
+
     async function counter() {
       try {
-        const socket = new WebSocket(`${API_URL}/counter`);
+        const socket = new WebSocket(`wss://algorithm-visualiser-api.onrender.com/counter`);
         socket.onopen = () => {
           console.log("Connected");
         }
